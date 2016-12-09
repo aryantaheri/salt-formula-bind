@@ -47,6 +47,33 @@ server {{ serverip }} {
 };
 {%- endfor %}
 
+{%- if server.logging is defined %}
+logging {
+
+{%- if server.logging.default %}
+    channel "defaultlog" {
+    	file "{{ server.log_dir }}/default.log" versions 5 size 10m;
+	severity notice;
+    	print-time yes;
+	print-severity yes;
+	print-category yes;
+    };
+    category default { defaultlog; };
+{%- endif %}
+
+{%- if server.logging.queries %}
+    channel "querylog" {
+    	file "{{ server.log_dir }}/query.log";
+    	print-time yes;
+	print-severity yes;
+	print-category yes;
+    };
+    category queries { querylog; };
+{%- endif %}
+
+};
+{%- endif %}
+
 {#-
   vim: syntax=jinja
 #}

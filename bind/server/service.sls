@@ -5,6 +5,16 @@ bind_packages:
   pkg.installed:
   - pkgs: {{ server.pkgs }}
 
+log_directory:
+  file.directory:
+  - name: {{ server.log_dir }}
+  - user: root
+  - group: {{ server.group }}
+  - mode: 775
+  - makedirs: True
+  - require:
+    - pkg: bind_packages
+
 named_directory:
   file.directory:
   - name: {{ server.named_dir }}
