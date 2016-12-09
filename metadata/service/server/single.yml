@@ -4,3 +4,6 @@ parameters:
   bind:
     server:
       enabled: true
+      logging:
+        default: true
+        queries: true
