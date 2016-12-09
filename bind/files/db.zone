@@ -1,20 +1,29 @@
 {%- from "bind/map.jinja" import server with context -%}
 {%- for name, zone in server.zone.iteritems() if name == zone_name %}
-$ORIGIN {{ name }}
+$ORIGIN {{ name }}.
 $TTL {{ zone.get('ttl', '86400') }}
 
-{{ name }}              IN SOA  {{ name }}. {{ zone.get('root', 'hostmaster.'+name)|replace('@', '.') }}. (
-                                {{ zone.get('serial', 1) }}
-                                {{ zone.get('refresh', 604800) }}
-                                {{ zone.get('retry', 86400) }}
-                                {{ zone.get('expire', 2419200) }}
-                                {{ zone.get('minimum', 86400) }}
+{{ name }}.	IN	SOA	{{ name }}. {{ zone.get('root', 'hostmaster.'+name)|replace('@', '.') }}. (
+                                {{ zone.get('serial', None|strftime('%y%m%d%H%M')) }}	; Serial
+                                {{ zone.get('refresh', 604800) }}		; Refresh
+                                {{ zone.get('retry', 86400) }}		; Retry
+                                {{ zone.get('expire', 2419200) }}		; Expire
+                                {{ zone.get('minimum', 86400) }}		; Negative Cache TTL
                                 )
 
 {%- for record in zone.get('records', []) %}
-{{ record.get('name', '@') }} {{ record.get('ttl', '') }} {{ type }} {% if type in ['TXT', 'SPF'] %}"{{ value }}"{% else %}{{ value }}{% endif %}
+{{ record.get('name', '@') }}	{{ record.get('ttl', '') }}	{{ record.get('class', '') }}	{{ record.get('type') }}	{% if record.get('type') in ['TXT', 'SPF'] %}"{{ record.get('value') }}"{% else %}{{ record.get('value') }}{% endif %}
 {%- endfor %}
-{%- endfor %}
+
+{%- if zone.get('use_mines', False) %}
+    {%- for node, dns in salt['mine.get']('*', 'dns_records').items()|sort %}
+	{%- for record in dns.get('records', [])|sort(attribute='name') %}
+	    {%- if name == record.get('domainname', '') %}
+{{ record.get('name', '@') }}	{{ record.get('ttl', '') }}	{{ record.get('class', '') }}	{{ record.get('type') }}	{% if record.get('type') in ['TXT', 'SPF'] %}"{{ record.get('value') }}"{% else %}{{ record.get('value') }}{% endif %}
+	    {%- endif %}
+	{%- endfor %}
+    {%- endfor %}
+{%- endif %}
 
 {%- endfor %}
 
