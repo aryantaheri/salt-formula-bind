@@ -11,15 +11,15 @@ $TTL {{ zone.get('ttl', '86400') }}
                                 {{ zone.get('minimum', 86400) }}		; Negative Cache TTL
                                 )
 
-{%- for record in zone.get('records', []) %}
-{{ record.get('name', '@') }}	{{ record.get('ttl', '') }}	{{ record.get('class', '') }}	{{ record.get('type') }}	{% if record.get('type') in ['TXT', 'SPF'] %}"{{ record.get('value') }}"{% else %}{{ record.get('value') }}{% endif %}
+{% for record in zone.get('records', []) %}
+{{ record.get('name', '') }}	{{ record.get('ttl', '') }}	{{ record.get('class', '') }}	{{ record.get('type') }}	{% if record.get('type') in ['TXT', 'SPF'] %}"{{ record.get('value') }}"{% else %}{{ record.get('value') }}{% endif %}
 {%- endfor %}
 
-{%- if zone.get('use_mines', False) %}
+{% if zone.get('use_mines', False) %}
     {%- for node, dns in salt['mine.get']('*', 'dns_records').items()|sort %}
 	{%- for record in dns.get('records', [])|sort(attribute='name') %}
 	    {%- if name == record.get('domainname', '') %}
-{{ record.get('name', '@') }}	{{ record.get('ttl', '') }}	{{ record.get('class', '') }}	{{ record.get('type') }}	{% if record.get('type') in ['TXT', 'SPF'] %}"{{ record.get('value') }}"{% else %}{{ record.get('value') }}{% endif %}
+{{ record.get('name', '') }}	{{ record.get('ttl', '') }}	{{ record.get('class', '') }}	{{ record.get('type') }}	{% if record.get('type') in ['TXT', 'SPF'] %}"{{ record.get('value') }}"{% else %}{{ record.get('value') }}{% endif %}
 	    {%- endif %}
 	{%- endfor %}
     {%- endfor %}
